@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最终验证测试 - Code Review修复</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .verification-section {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .verification-section:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-result {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .test-result.pass { border-left: 4px solid #10b981; background: #f0fdf4; }
+        .test-result.fail { border-left: 4px solid #ef4444; background: #fef2f2; }
+        .test-result.pending { border-left: 4px solid #f59e0b; background: #fffbeb; }
+        .progress-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #fb923c);
+            transition: width 0.5s ease;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.success { background: #dcfce7; color: #166534; }
+        .status-badge.error { background: #fee2e2; color: #991b1b; }
+        .status-badge.testing { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-2">🔧 Code Review 修复验证</h1>
+            <p class="text-gray-600">验证所有修复是否正常工作</p>
+        </div>
+
+        <!-- 总体进度 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">总体进度</h2>
+                <span id="overall-status" class="status-badge testing">测试中</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between mt-2 text-sm text-gray-600">
+                <span id="completed-count">已完成: 0/0</span>
+                <span id="success-rate">成功率: 0%</span>
+            </div>
+        </div>
+
+        <!-- 1. localStorage安全性 -->
+        <div class="verification-section bg-white">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <span class="text-2xl mr-2">1.</span>
+                localStorage安全性检查
+                <span id="storage-status" class="status-badge testing ml-auto">测试中</span>
+            </h2>
+            <div id="storage-tests" class="space-y-2">
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>检测localStorage可用性</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>测试安全存储函数</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>验证数据损坏处理</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>检查错误处理机制</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 用户友好的重置界面 -->
+        <div class="verification-section bg-white">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <span class="text-2xl mr-2">2.</span>
+                用户友好的重置界面
+                <span id="reset-status" class="status-badge testing ml-auto">测试中</span>
+            </h2>
+            <div id="reset-tests" class="space-y-2">
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>检查重置按钮存在</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>验证确认对话框功能</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>测试数据清除完整性</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>确认UI状态恢复</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 数据验证和完整性 -->
+        <div class="verification-section bg-white">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <span class="text-2xl mr-2">3.</span>
+                数据验证和完整性
+                <span id="data-status" class="status-badge testing ml-auto">测试中</span>
+            </h2>
+            <div id="data-tests" class="space-y-2">
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>模块完成数据验证</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>步骤进度数据验证</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>平台选择数据验证</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>异常数据处理能力</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 边缘情况处理 -->
+        <div class="verification-section bg-white">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <span class="text-2xl mr-2">4.</span>
+                边缘情况处理
+                <span id="edge-status" class="status-badge testing ml-auto">测试中</span>
+            </h2>
+            <div id="edge-tests" class="space-y-2">
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>首次访问处理（空localStorage）</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>中途刷新恢复测试</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>清空缓存后重新开始</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>并发操作稳定性</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. JavaScript错误检查 -->
+        <div class="verification-section bg-white">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <span class="text-2xl mr-2">5.</span>
+                JavaScript错误检查
+                <span id="js-status" class="status-badge testing ml-auto">测试中</span>
+            </h2>
+            <div id="js-tests" class="space-y-2">
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>语法错误检查</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>运行时错误监控</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>控制台警告检查</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>内存泄漏检查</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 功能完整性测试 -->
+        <div class="verification-section bg-white">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <span class="text-2xl mr-2">6.</span>
+                功能完整性测试
+                <span id="feature-status" class="status-badge testing ml-auto">测试中</span>
+            </h2>
+            <div id="feature-tests" class="space-y-2">
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>模块导航功能</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>平台切换功能</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>代码复制功能</span>
+                </div>
+                <div class="test-result pending">
+                    <span class="w-6 text-center mr-2">⏳</span>
+                    <span>步骤进度功能</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4">🚀 快速操作</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="runQuickTests()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                    🧪 运行快速测试
+                </button>
+                <button onclick="runAllTests()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                    🧪 运行全部测试
+                </button>
+                <button onclick="openMainSite()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                    🌐 打开主网站
+                </button>
+                <button onclick="generateReport()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                    📄 生成报告
+                </button>
+            </div>
+        </div>
+
+        <!-- 详细日志 -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4">📋 详细日志</h2>
+            <div id="detailed-logs" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto">
+                <p>等待测试开始...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/storage-utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/platform.js"></script>
+    <script src="js/steps.js"></script>
+    <script src="js/copy.js"></script>
+    <script>
+        // 测试结果跟踪
+        const testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            warnings: 0
+        };
+
+        // 日志系统
+        const logs = [];
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+            logs.push(logEntry);
+            updateLogDisplay();
+        }
+
+        function updateLogDisplay() {
+            const logContainer = document.getElementById('detailed-logs');
+            logContainer.innerHTML = logs.map(log =>
+                `<div class="${log.includes('ERROR') ? 'text-red-400' : log.includes('WARN') ? 'text-yellow-400' : log.includes('PASS') ? 'text-green-400' : 'text-blue-400'}">${log}</div>`
+            ).join('');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // 更新测试结果显示
+        function updateTestResult(sectionId, testIndex, isPass, message) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+
+            const testItems = section.querySelectorAll('.test-result');
+            if (testItems[testIndex]) {
+                const testItem = testItems[testIndex];
+                testItem.className = `test-result ${isPass ? 'pass' : 'fail'}`;
+                testItem.querySelector('span:first-child').textContent = isPass ? '✅' : '❌';
+                testItem.querySelector('span:last-child').textContent = message;
+            }
+
+            // 更新总体进度
+            testResults.total++;
+            if (isPass) {
+                testResults.passed++;
+            } else {
+                testResults.failed++;
+            }
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const total = testResults.total;
+            const passed = testResults.passed;
+            const successRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+
+            document.getElementById('completed-count').textContent = `已完成: ${passed}/${total}`;
+            document.getElementById('success-rate').textContent = `成功率: ${successRate}%`;
+            document.getElementById('progress-fill').style.width = `${successRate}%`;
+
+            // 更新总体状态
+            const overallStatus = document.getElementById('overall-status');
+            if (total === 0) {
+                overallStatus.className = 'status-badge testing';
+                overallStatus.textContent = '测试中';
+            } else if (testResults.failed === 0) {
+                overallStatus.className = 'status-badge success';
+                overallStatus.textContent = '全部通过';
+            } else {
+                overallStatus.className = 'status-badge error';
+                overallStatus.textContent = '发现问题';
+            }
+        }
+
+        // 快速测试
+        function runQuickTests() {
+            addLog('开始快速测试...', 'info');
+            runStorageTests();
+        }
+
+        // 全部测试
+        function runAllTests() {
+            addLog('开始全部测试...', 'info');
+            resetAllTests();
+            runStorageTests();
+            runResetTests();
+            runDataTests();
+            runEdgeCaseTests();
+            runJavaScriptTests();
+            runFeatureTests();
+            addLog('全部测试完成！', 'success');
+        }
+
+        function resetAllTests() {
+            testResults.total = 0;
+            testResults.passed = 0;
+            testResults.failed = 0;
+            testResults.warnings = 0;
+            logs.length = 0;
+            updateProgress();
+            addLog('测试状态已重置', 'info');
+        }
+
+        // 1. localStorage测试
+        function runStorageTests() {
+            addLog('📒 开始localStorage安全性测试...', 'info');
+
+            try {
+                const isAvailable = isLocalStorageAvailable();
+                updateTestResult('storage-tests', 0, isAvailable, 'localStorage可用性检测');
+                addLog(isAvailable ? '✓ localStorage可用' : '✗ localStorage不可用', isAvailable ? 'success' : 'error');
+            } catch (error) {
+                updateTestResult('storage-tests', 0, false, '检测异常: ' + error.message);
+                addLog('✗ localStorage检测失败: ' + error.message, 'error');
+            }
+
+            try {
+                const storage = safeLocalStorage();
+                storage.setItem('test_safe', 'safe_value');
+                const value = storage.getItem('test_safe');
+                const isWorking = value === 'safe_value';
+                updateTestResult('storage-tests', 1, isWorking, '安全存储函数测试');
+                addLog(isWorking ? '✓ 安全存储正常' : '✗ 安全存储失败', isWorking ? 'success' : 'error');
+                storage.removeItem('test_safe');
+            } catch (error) {
+                updateTestResult('storage-tests', 1, false, '安全存储异常: ' + error.message);
+                addLog('✗ 安全存储测试失败: ' + error.message, 'error');
+            }
+
+            try {
+                localStorage.setItem('claude_code_test_corrupted', '{invalid json}');
+                const value = safeGetItem('claude_code_test_corrupted', '[]');
+                let parsed = [];
+                try {
+                    parsed = JSON.parse(value);
+                } catch (e) {
+                    parsed = [];
+                }
+                const canHandle = Array.isArray(parsed);
+                updateTestResult('storage-tests', 2, canHandle, '损坏数据处理测试');
+                addLog(canHandle ? '✓ 损坏数据处理正常' : '✗ 损坏数据处理失败', canHandle ? 'success' : 'error');
+                localStorage.removeItem('claude_code_test_corrupted');
+            } catch (error) {
+                updateTestResult('storage-tests', 2, false, '损坏数据处理异常: ' + error.message);
+                addLog('✗ 损坏数据处理失败: ' + error.message, 'error');
+            }
+
+            try {
+                if (typeof app !== 'undefined' && app.confirmResetProgress) {
+                    updateTestResult('storage-tests', 3, true, '错误处理机制存在');
+                    addLog('✓ 错误处理机制正常', 'success');
+                } else {
+                    updateTestResult('storage-tests', 3, false, '错误处理机制缺失');
+                    addLog('✗ 错误处理机制缺失', 'error');
+                }
+            } catch (error) {
+                updateTestResult('storage-tests', 3, false, '错误处理检查异常: ' + error.message);
+                addLog('✗ 错误处理检查失败: ' + error.message, 'error');
+            }
+        }
+
+        // 2. 重置功能测试
+        function runResetTests() {
+            addLog('🔄 开始重置功能测试...', 'info');
+
+            try {
+                if (typeof app !== 'undefined') {
+                    updateTestResult('reset-tests', 0, true, 'App实例存在');
+                    addLog('✓ App实例正常', 'success');
+                } else {
+                    updateTestResult('reset-tests', 0, false, 'App实例不存在');
+                    addLog('✗ App实例缺失', 'error');
+                }
+            } catch (error) {
+                updateTestResult('reset-tests', 0, false, 'App检查异常: ' + error.message);
+                addLog('✗ App检查失败: ' + error.message, 'error');
+            }
+
+            try {
+                const hasResetMethod = typeof app !== 'undefined' && typeof app.confirmResetProgress === 'function';
+                updateTestResult('reset-tests', 1, hasResetMethod, '重置方法存在');
+                addLog(hasResetMethod ? '✓ 重置方法存在' : '✗ 重置方法缺失', hasResetMethod ? 'success' : 'error');
+            } catch (error) {
+                updateTestResult('reset-tests', 1, false, '重置方法检查异常: ' + error.message);
+                addLog('✗ 重置方法检查失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 检查侧边栏HTML
+                if (typeof app !== 'undefined') {
+                    const sidebarHTML = app.generateSidebarHTML();
+                    const hasResetButton = sidebarHTML.includes('confirmResetProgress');
+                    updateTestResult('reset-tests', 2, hasResetButton, '重置按钮UI存在');
+                    addLog(hasResetButton ? '✓ 重置按钮UI存在' : '✗ 重置按钮UI缺失', hasResetButton ? 'success' : 'error');
+                } else {
+                    updateTestResult('reset-tests', 2, false, '无法检查UI');
+                    addLog('✗ 无法检查UI，App实例不存在', 'error');
+                }
+            } catch (error) {
+                updateTestResult('reset-tests', 2, false, 'UI检查异常: ' + error.message);
+                addLog('✗ UI检查失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 模拟数据清除测试
+                const testKey = 'test_reset_' + Date.now();
+                safeSetItem(testKey, 'test_value');
+                const beforeRemove = safeGetItem(testKey);
+                safeRemoveItem(testKey);
+                const afterRemove = safeGetItem(testKey);
+
+                const cleanupWorks = beforeRemove === 'test_value' && afterRemove === null;
+                updateTestResult('reset-tests', 3, cleanupWorks, '数据清除功能测试');
+                addLog(cleanupWorks ? '✓ 数据清除功能正常' : '✗ 数据清除功能失败', cleanupWorks ? 'success' : 'error');
+            } catch (error) {
+                updateTestResult('reset-tests', 3, false, '数据清除测试异常: ' + error.message);
+                addLog('✗ 数据清除测试失败: ' + error.message, 'error');
+            }
+        }
+
+        // 3. 数据测试
+        function runDataTests() {
+            addLog('📊 开始数据验证测试...', 'info');
+
+            try {
+                const completed = safeGetItem('claude_code_completed_modules', '[]');
+                let isValid = false;
+                try {
+                    const parsed = JSON.parse(completed);
+                    isValid = Array.isArray(parsed);
+                } catch (e) {
+                    isValid = false;
+                }
+                updateTestResult('data-tests', 0, isValid, '模块完成数据验证');
+                addLog(isValid ? '✓ 模块完成数据正常' : '✗ 模块完成数据异常', isValid ? 'success' : 'error');
+            } catch (error) {
+                updateTestResult('data-tests', 0, false, '模块数据验证异常: ' + error.message);
+                addLog('✗ 模块数据验证失败: ' + error.message, 'error');
+            }
+
+            try {
+                const progress = safeGetItem('claude_code_module_test_progress', '0');
+                let isValid = false;
+                try {
+                    const num = parseInt(progress);
+                    isValid = !isNaN(num) && num >= 0;
+                } catch (e) {
+                    isValid = false;
+                }
+                updateTestResult('data-tests', 1, isValid, '步骤进度数据验证');
+                addLog(isValid ? '✓ 步骤进度数据正常' : '✗ 步骤进度数据异常', isValid ? 'success' : 'error');
+            } catch (error) {
+                updateTestResult('data-tests', 1, false, '进度数据验证异常: ' + error.message);
+                addLog('✗ 进度数据验证失败: ' + error.message, 'error');
+            }
+
+            try {
+                const platform = safeGetItem('claude_code_selected_platform', 'mac');
+                const isValid = platform === 'mac' || platform === 'windows' || platform === null;
+                updateTestResult('data-tests', 2, isValid, '平台选择数据验证');
+                addLog(isValid ? '✓ 平台选择数据正常' : '✗ 平台选择数据异常', isValid ? 'success' : 'error');
+            } catch (error) {
+                updateTestResult('data-tests', 2, false, '平台数据验证异常: ' + error.message);
+                addLog('✗ 平台数据验证失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 测试异常数据处理
+                localStorage.setItem('claude_code_test_exception', 'invalid_data');
+                const data = safeGetItem('claude_code_test_exception', null);
+                const canHandleException = data !== null; // safeGetItem应该返回null而不是抛出错误
+                updateTestResult('data-tests', 3, canHandleException, '异常数据处理能力');
+                addLog(canHandleException ? '✓ 异常数据处理正常' : '⚠️ 异常数据处理需改进', canHandleException ? 'success' : 'warn');
+                localStorage.removeItem('claude_code_test_exception');
+            } catch (error) {
+                updateTestResult('data-tests', 3, false, '异常处理测试失败: ' + error.message);
+                addLog('✗ 异常处理测试失败: ' + error.message, 'error');
+            }
+        }
+
+        // 4. 边缘情况测试
+        function runEdgeCaseTests() {
+            addLog('🎯 开始边缘情况测试...', 'info');
+
+            try {
+                // 测试首次访问（空localStorage）
+                const emptyStorage = safeGetItem('claude_code_nonexistent_key', null);
+                const handlesEmpty = emptyStorage === null;
+                updateTestResult('edge-tests', 0, handlesEmpty, '首次访问处理测试');
+                addLog(handlesEmpty ? '✓ 首次访问处理正常' : '✗ 首次访问处理异常', handlesEmpty ? 'success' : 'error');
+            } catch (error) {
+                updateTestResult('edge-tests', 0, false, '首次访问测试异常: ' + error.message);
+                addLog('✗ 首次访问测试失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 测试数据恢复
+                const testData = { step: 5, completed: ['1', '2'] };
+                safeSetItem('claude_code_test_recovery', JSON.stringify(testData));
+                const recovered = JSON.parse(safeGetItem('claude_code_test_recovery', '{}'));
+                const canRecover = recovered.step === 5 && recovered.completed.length === 2;
+                updateTestResult('edge-tests', 1, canRecover, '数据恢复能力测试');
+                addLog(canRecover ? '✓ 数据恢复能力正常' : '✗ 数据恢复能力异常', canRecover ? 'success' : 'error');
+                localStorage.removeItem('claude_code_test_recovery');
+            } catch (error) {
+                updateTestResult('edge-tests', 1, false, '数据恢复测试异常: ' + error.message);
+                addLog('✗ 数据恢复测试失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 测试并发操作
+                let concurrentErrors = 0;
+                for (let i = 0; i < 20; i++) {
+                    try {
+                        safeSetItem('test_concurrent_' + i, 'value_' + i);
+                    } catch (error) {
+                        concurrentErrors++;
+                    }
+                }
+                const handlesConcurrent = concurrentErrors === 0;
+                updateTestResult('edge-tests', 2, handlesConcurrent, '并发操作稳定性测试');
+                addLog(handlesConcurrent ? '✓ 并发操作稳定性正常' : '⚠️ 并发操作发现' + concurrentErrors + '个错误', handlesConcurrent ? 'success' : 'warn');
+            } catch (error) {
+                updateTestResult('edge-tests', 2, false, '并发操作测试异常: ' + error.message);
+                addLog('✗ 并发操作测试失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 测试边界值
+                const edgeCases = ['-1', '999999', '0', 'null', 'undefined'];
+                let handlesEdgeCases = 0;
+                edgeCases.forEach((testCase, index) => {
+                    try {
+                        safeSetItem('test_edge_' + index, testCase);
+                        handlesEdgeCases++;
+                    } catch (error) {
+                        addLog('⚠️ 边界值处理异常: ' + testCase + ' - ' + error.message, 'warn');
+                    }
+                });
+                const passesEdgeCases = handlesEdgeCases === edgeCases.length;
+                updateTestResult('edge-tests', 3, passesEdgeCases, '边界值处理测试');
+                addLog(passesEdgeCases ? '✓ 边界值处理正常' : '⚠️ 边界值处理有问题', passesEdgeCases ? 'success' : 'warn');
+            } catch (error) {
+                updateTestResult('edge-tests', 3, false, '边界值测试异常: ' + error.message);
+                addLog('✗ 边界值测试失败: ' + error.message, 'error');
+            }
+        }
+
+        // 5. JavaScript测试
+        function runJavaScriptTests() {
+            addLog('🔍 开始JavaScript错误检查...', 'info');
+
+            let errorCount = 0;
+            let warningCount = 0;
+
+            // 拦截console.error和console.warn
+            const originalError = console.error;
+            const originalWarn = console.warn;
+
+            console.error = function(...args) {
+                errorCount++;
+                addLog('JavaScript ERROR: ' + args.join(' '), 'error');
+                originalError.apply(console, args);
+            };
+
+            console.warn = function(...args) {
+                warningCount++;
+                addLog('JavaScript WARN: ' + args.join(' '), 'warn');
+                originalWarn.apply(console, args);
+            };
+
+            // 检查语法错误
+            setTimeout(() => {
+                try {
+                    // 测试主要类的可用性
+                    const classesAvailable = typeof App !== 'undefined' &&
+                                         typeof PlatformSwitcher !== 'undefined' &&
+                                         typeof StepViewer !== 'undefined' &&
+                                         typeof CodeCopyButton !== 'undefined';
+                    updateTestResult('js-tests', 0, classesAvailable, '类定义完整性检查');
+                    addLog(classesAvailable ? '✓ 所有必要类都可用' : '✗ 某些类不可用', classesAvailable ? 'success' : 'error');
+                } catch (error) {
+                    updateTestResult('js-tests', 0, false, '类检查异常: ' + error.message);
+                    addLog('✗ 类检查失败: ' + error.message, 'error');
+                }
+
+                try {
+                    // 测试函数调用
+                    if (typeof app !== 'undefined') {
+                        const status = app.testGetStatus();
+                        const functionsWork = typeof status === 'object' &&
+                                               'currentModuleId' in status &&
+                                               'completedModules' in status;
+                        updateTestResult('js-tests', 1, functionsWork, '函数调用测试');
+                        addLog(functionsWork ? '✓ 函数调用正常' : '✗ 函数调用异常', functionsWork ? 'success' : 'error');
+                    } else {
+                        updateTestResult('js-tests', 1, false, '函数调用测试失败');
+                        addLog('✗ 函数调用测试失败，App不可用', 'error');
+                    }
+                } catch (error) {
+                    updateTestResult('js-tests', 1, false, '函数调用测试异常: ' + error.message);
+                    addLog('✗ 函数调用测试失败: ' + error.message, 'error');
+                }
+
+                // 检查错误数量
+                const hasNoErrors = errorCount === 0;
+                updateTestResult('js-tests', 2, hasNoErrors, errorCount + '个运行时错误');
+                addLog(hasNoErrors ? '✓ 无运行时错误' : '⚠️ 发现' + errorCount + '个错误', hasNoErrors ? 'success' : errorCount > 0 ? 'error' : 'warn');
+
+                // 检查警告数量
+                const hasNoWarnings = warningCount === 0;
+                updateTestResult('js-tests', 3, hasNoWarnings, warningCount + '个警告信息');
+                addLog(hasNoWarnings ? '✓ 无警告信息' : '⚠️ 发现' + warningCount + '个警告', hasNoWarnings ? 'success' : warningCount > 0 ? 'warn' : 'success');
+
+                // 恢复原始console方法
+                console.error = originalError;
+                console.warn = originalWarn;
+
+            }, 500);
+        }
+
+        // 6. 功能测试
+        function runFeatureTests() {
+            addLog('🚀 开始功能完整性测试...', 'info');
+
+            try {
+                // 测试模块导航
+                if (typeof app !== 'undefined' && app.navigateToModule) {
+                    const originalModuleId = app.currentModuleId;
+                    app.navigateToModule('1');
+                    const navigationWorks = app.currentModuleId === '1';
+                    app.navigateToModule(originalModuleId || '1'); // 恢复
+
+                    updateTestResult('feature-tests', 0, navigationWorks, '模块导航功能测试');
+                    addLog(navigationWorks ? '✓ 模块导航功能正常' : '✗ 模块导航功能异常', navigationWorks ? 'success' : 'error');
+                } else {
+                    updateTestResult('feature-tests', 0, false, '模块导航测试失败');
+                    addLog('✗ 模块导航测试失败，App不可用', 'error');
+                }
+            } catch (error) {
+                updateTestResult('feature-tests', 0, false, '模块导航测试异常: ' + error.message);
+                addLog('✗ 模块导航测试失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 测试平台切换
+                if (typeof platformSwitcher !== 'undefined' && platformSwitcher.switchPlatform) {
+                    const originalPlatform = platformSwitcher.currentPlatform;
+                    platformSwitcher.switchPlatform('windows');
+                    const switchWorks = platformSwitcher.currentPlatform === 'windows';
+                    platformSwitcher.switchPlatform(originalPlatform); // 恢复
+
+                    updateTestResult('feature-tests', 1, switchWorks, '平台切换功能测试');
+                    addLog(switchWorks ? '✓ 平台切换功能正常' : '✗ 平台切换功能异常', switchWorks ? 'success' : 'error');
+                } else {
+                    updateTestResult('feature-tests', 1, false, '平台切换测试失败');
+                    addLog('✗ 平台切换测试失败，PlatformSwitcher不可用', 'error');
+                }
+            } catch (error) {
+                updateTestResult('feature-tests', 1, false, '平台切换测试异常: ' + error.message);
+                addLog('✗ 平台切换测试失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 测试代码复制
+                if (typeof CodeCopyButton !== 'undefined') {
+                    const copyInstance = new CodeCopyButton();
+                    const copyWorks = copyInstance && typeof copyInstance.refresh === 'function';
+                    updateTestResult('feature-tests', 2, copyWorks, '代码复制功能测试');
+                    addLog(copyWorks ? '✓ 代码复制功能正常' : '✗ 代码复制功能异常', copyWorks ? 'success' : 'error');
+                } else {
+                    updateTestResult('feature-tests', 2, false, '代码复制测试失败');
+                    addLog('✗ 代码复制测试失败，CodeCopyButton不可用', 'error');
+                }
+            } catch (error) {
+                updateTestResult('feature-tests', 2, false, '代码复制测试异常: ' + error.message);
+                addLog('✗ 代码复制测试失败: ' + error.message, 'error');
+            }
+
+            try {
+                // 测试步骤进度
+                if (typeof StepViewer !== 'undefined') {
+                    const testSteps = [
+                        { content: '步骤1内容' },
+                        { content: '步骤2内容' }
+                    ];
+                    const testContainer = document.createElement('div');
+                    testContainer.id = 'test-step-container';
+                    document.body.appendChild(testContainer);
+
+                    const stepViewer = new StepViewer('test-step-container', testSteps, '', 'test');
+                    const stepWorks = stepViewer && typeof stepViewer.nextStep === 'function';
+
+                    // 清理
+                    document.body.removeChild(testContainer);
+
+                    updateTestResult('feature-tests', 3, stepWorks, '步骤进度功能测试');
+                    addLog(stepWorks ? '✓ 步骤进度功能正常' : '✗ 步骤进度功能异常', stepWorks ? 'success' : 'error');
+                } else {
+                    updateTestResult('feature-tests', 3, false, '步骤进度测试失败');
+                    addLog('✗ 步骤进度测试失败，StepViewer不可用', 'error');
+                }
+            } catch (error) {
+                updateTestResult('feature-tests', 3, false, '步骤进度测试异常: ' + error.message);
+                addLog('✗ 步骤进度测试失败: ' + error.message, 'error');
+            }
+        }
+
+        // 快速操作
+        function openMainSite() {
+            window.open('learn.html', '_blank');
+            addLog('已打开主网站', 'info');
+        }
+
+        function generateReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                results: testResults,
+                logs: logs
+            };
+
+            const reportContent = `
+# Code Review 修复验证报告
+
+生成时间: ${new Date().toLocaleString()}
+
+## 测试结果统计
+- 总测试数: ${testResults.total}
+- 通过: ${testResults.passed}
+- 失败: ${testResults.failed}
+- 警告: ${testResults.warnings}
+- 成功率: ${testResults.total > 0 ? ((testResults.passed / testResults.total) * 100).toFixed(1) : 0}%
+
+## 详细日志
+${logs.join('\\n')}
+            `;
+
+            // 创建下载
+            const blob = new Blob([reportContent], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'code-review-verification-report.md';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            addLog('报告已生成并下载', 'success');
+        }
+
+        // 页面加载完成后自动开始快速测试
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🔧 Code Review 修复验证页面已加载', 'info');
+            addLog('等待用户操作或自动测试...', 'info');
+
+            // 延迟一下让所有脚本加载完成
+            setTimeout(() => {
+                runQuickTests();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

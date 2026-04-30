@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Quiz</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        #debug-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #quiz-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 100px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz Debug Page</h1>
+
+    <div id="debug-info">
+        <h2>Debug Information</h2>
+        <div id="load-status">Loading...</div>
+    </div>
+
+    <div id="quiz-container">
+        <div class="loading">Loading quiz...</div>
+    </div>
+
+    <script src="js/storage-utils.js"></script>
+    <script src="js/quiz.js"></script>
+    <script>
+        const debugInfo = document.getElementById('debug-info');
+        const loadStatus = document.getElementById('load-status');
+
+        // Check if scripts loaded
+        let debugInfoHtml = '<h3>Script Loading Status:</h3>';
+
+        // Check storage-utils
+        if (typeof safeGetItem !== 'undefined') {
+            debugInfoHtml += '<p class="success">✓ safeGetItem loaded</p>';
+        } else {
+            debugInfoHtml += '<p class="error">✗ safeGetItem NOT loaded</p>';
+        }
+
+        if (typeof safeSetItem !== 'undefined') {
+            debugInfoHtml += '<p class="success">✓ safeSetItem loaded</p>';
+        } else {
+            debugInfoHtml += '<p class="error">✗ safeSetItem NOT loaded</p>';
+        }
+
+        // Check Quiz class
+        if (typeof Quiz !== 'undefined') {
+            debugInfoHtml += '<p class="success">✓ Quiz class loaded</p>';
+        } else {
+            debugInfoHtml += '<p class="error">✗ Quiz class NOT loaded</p>';
+        }
+
+        // Check localStorage
+        try {
+            localStorage.setItem('test', 'test');
+            localStorage.removeItem('test');
+            debugInfoHtml += '<p class="success">✓ localStorage available</p>';
+        } catch (e) {
+            debugInfoHtml += '<p class="error">✗ localStorage NOT available: ' + e.message + '</p>';
+        }
+
+        debugInfoHtml += '<h3>Quiz Initialization:</h3>';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            debugInfoHtml += '<p>✓ DOMContentLoaded fired</p>';
+
+            setTimeout(() => {
+                try {
+                    if (typeof Quiz !== 'undefined') {
+                        debugInfoHtml += '<p>✓ Creating Quiz instance...</p>';
+                        const quiz = new Quiz();
+                        debugInfoHtml += '<p class="success">✓ Quiz instance created successfully</p>';
+
+                        // Check if quiz rendered
+                        setTimeout(() => {
+                            const quizContainer = document.getElementById('quiz-container');
+                            if (quizContainer) {
+                                const hasContent = quizContainer.innerHTML.length > 100;
+                                debugInfoHtml += hasContent
+                                    ? '<p class="success">✓ Quiz rendered with content</p>'
+                                    : '<p class="error">✗ Quiz rendered but no content</p>';
+                            }
+
+                            loadStatus.innerHTML = debugInfoHtml;
+                        }, 500);
+                    } else {
+                        debugInfoHtml += '<p class="error">✗ Quiz class still not defined</p>';
+                        loadStatus.innerHTML = debugInfoHtml;
+                    }
+                } catch (error) {
+                    debugInfoHtml += '<p class="error">✗ Error creating Quiz: ' + error.message + '</p>';
+                    console.error('Quiz creation error:', error);
+                    loadStatus.innerHTML = debugInfoHtml;
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

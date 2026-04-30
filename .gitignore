@@ -1,0 +1,8 @@
+node_modules/
+test-results/
+*.spec.js
+playwright.config.js
+package.json
+package-lock.json
+test-*.html
+playwright-tests/

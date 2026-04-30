@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "node",
+      "args": [
+        "node_modules/@playwright/mcp/dist/index.js"
+      ],
+      "env": {
+        "PLAYWRIGHT_BROWSERS_PATH": "0",
+        "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"
+      }
+    }
+  }
+}

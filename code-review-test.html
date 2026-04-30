@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Review 测试页面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .test-section {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-section h3 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+        .test-item .status {
+            width: 20px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .test-item.pass { border-left: 4px solid #10b981; }
+        .test-item.fail { border-left: 4px solid #ef4444; }
+        .test-item.pending { border-left: 4px solid #f59e0b; }
+        .test-item .status.pass { color: #10b981; }
+        .test-item .status.fail { color: #ef4444; }
+        .test-item .status.pending { color: #f59e0b; }
+
+        /* 模拟375px宽度 */
+        .mobile-simulator {
+            width: 375px;
+            height: 667px;
+            border: 4px solid #333;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            background: white;
+        }
+        .mobile-simulator iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center">Code Review 全面测试</h1>
+
+        <!-- 1. localStorage统一性检查 -->
+        <div class="test-section">
+            <h3 class="text-xl font-bold">1. localStorage统一性检查</h3>
+            <div id="localstorage-results"></div>
+        </div>
+
+        <!-- 2. 手机端适配检查 -->
+        <div class="test-section">
+            <h3 class="text-xl font-bold">2. 手机端适配检查 (375px)</h3>
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">在下方模拟器中测试移动端功能：</p>
+            </div>
+            <div class="flex justify-center mb-4">
+                <button onclick="loadMobileSimulator('index.html')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mr-2">
+                    测试首页
+                </button>
+                <button onclick="loadMobileSimulator('learn.html')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
+                    测试学习页
+                </button>
+            </div>
+            <div class="flex justify-center">
+                <div class="mobile-simulator">
+                    <iframe id="mobile-simulator" src="index.html"></iframe>
+                </div>
+            </div>
+            <div id="mobile-test-results" class="mt-4"></div>
+        </div>
+
+        <!-- 3. JavaScript错误检查 -->
+        <div class="test-section">
+            <h3 class="text-xl font-bold">3. JavaScript错误检查</h3>
+            <div id="error-check-results"></div>
+            <div class="mt-4">
+                <button onclick="checkJavaScriptErrors()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded">
+                    运行JavaScript错误检查
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. 边缘情况检查 -->
+        <div class="test-section">
+            <h3 class="text-xl font-bold">4. 边缘情况检查</h3>
+            <div id="edge-case-results"></div>
+            <div class="mt-4 space-y-2">
+                <button onclick="testFirstVisit()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded">
+                    测试：首次访问（localStorage清空）
+                </button>
+                <button onclick="testMidProgressRefresh()" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded">
+                    测试：中途刷新恢复
+                </button>
+                <button onclick="testCacheClear()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                    测试：清空缓存后重新开始
+                </button>
+            </div>
+        </div>
+
+        <!-- 5. 复制按钮功能测试 -->
+        <div class="test-section">
+            <h3 class="text-xl font-bold">5. 复制按钮功能测试</h3>
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-bold mb-2">测试代码块：</h4>
+                    <pre><code>claude --version</code></pre>
+                </div>
+                <div class="space-y-2">
+                    <div class="test-item pending" id="copy-button-visibility">
+                        <span class="status pending">⏳</span>
+                        <span>复制按钮是否始终显示</span>
+                    </div>
+                    <div class="test-item pending" id="copy-button-style">
+                        <span class="status pending">⏳</span>
+                        <span>复制按钮样式是否为白色半透明</span>
+                    </div>
+                    <div class="test-item pending" id="copy-functionality">
+                        <span class="status pending">⏳</span>
+                        <span>复制功能是否正常工作</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 测试结果汇总 -->
+        <div class="test-section bg-green-50">
+            <h3 class="text-xl font-bold">测试结果汇总</h3>
+            <div id="summary-results" class="text-lg"></div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载后自动运行基础检查
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Code Review 测试页面加载完成');
+            checkLocalStorageUniformity();
+            checkCopyButton();
+        });
+
+        // 1. localStorage统一性检查
+        function checkLocalStorageUniformity() {
+            console.log('📋 开始检查localStorage统一性...');
+
+            // 列出所有localStorage key
+            const allKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('claude_code_')) {
+                    allKeys.push(key);
+                }
+            }
+
+            // 预期的key列表
+            const expectedKeys = [
+                'claude_code_completed_modules',
+                'claude_code_skipped_modules',
+                'claude_code_selected_platform'
+            ];
+
+            // 动态生成的key（模块进度）
+            const moduleKeys = allKeys.filter(key => key.includes('_progress'));
+            const otherKeys = allKeys.filter(key => !key.includes('_progress'));
+
+            const results = [];
+            let hasIssues = false;
+
+            // 检查基础key是否存在
+            expectedKeys.forEach(key => {
+                const exists = allKeys.includes(key);
+                results.push({
+                    test: `基础key "${key}" 是否存在`,
+                    status: exists ? 'pass' : 'fail',
+                    message: exists ? '✓ 存在' : '✗ 不存在'
+                });
+                if (!exists) hasIssues = true;
+            });
+
+            // 检查命名规范
+            allKeys.forEach(key => {
+                const isValidNaming = key.startsWith('claude_code_');
+                results.push({
+                    test: `key "${key}" 命名规范`,
+                    status: isValidNaming ? 'pass' : 'fail',
+                    message: isValidNaming ? '✓ 符合规范' : '✗ 不符合规范'
+                });
+                if (!isValidNaming) hasIssues = true;
+            });
+
+            // 检查是否有冲突
+            const keyMap = {};
+            allKeys.forEach(key => {
+                if (keyMap[key]) {
+                    results.push({
+                        test: `key "${key}" 重复`,
+                        status: 'fail',
+                        message: '✗ 检测到重复key'
+                    });
+                    hasIssues = true;
+                }
+                keyMap[key] = true;
+            });
+
+            // 显示结果
+            displayResults('localstorage-results', results);
+
+            // 汇总信息
+            const summary = `
+                <p><strong>发现的localStorage key数量：</strong> ${allKeys.length}</p>
+                <p><strong>基础key数量：</strong> ${otherKeys.length}</p>
+                <p><strong>模块进度key数量：</strong> ${moduleKeys.length}</p>
+                <p><strong>命名规范检查：</strong> ${hasIssues ? '❌ 发现问题' : '✅ 通过'}</p>
+                <p><strong>所有key列表：</strong></p>
+                <ul class="list-disc list-inside text-sm">
+                    ${allKeys.map(key => `<li>${key}: ${localStorage.getItem(key)}</li>`).join('')}
+                </ul>
+            `;
+
+            document.getElementById('localstorage-results').innerHTML += `
+                <div class="mt-4 p-4 bg-gray-50 rounded">
+                    ${summary}
+                </div>
+            `;
+        }
+
+        // 2. 手机端适配检查
+        function loadMobileSimulator(page) {
+            const simulator = document.getElementById('mobile-simulator');
+            simulator.src = page;
+            console.log(`📱 加载移动端模拟器: ${page}`);
+
+            // 显示测试提示
+            document.getElementById('mobile-test-results').innerHTML = `
+                <div class="p-4 bg-blue-50 rounded border border-blue-200">
+                    <p class="font-bold mb-2">请在模拟器中手动测试：</p>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li>步骤组件的"继续"按钮是否好点击（最小44px高度）</li>
+                        <li>侧边栏抽屉是否正常开关</li>
+                        <li>代码块是否不溢出屏幕</li>
+                        <li>Tab切换组件是否正常工作</li>
+                        <li>复制按钮是否始终可见</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // 3. JavaScript错误检查
+        function checkJavaScriptErrors() {
+            console.log('🔍 开始JavaScript错误检查...');
+
+            const results = [];
+            const originalConsoleError = console.error;
+            const originalConsoleWarn = console.warn;
+            const errors = [];
+            const warnings = [];
+
+            // 拦截console.error
+            console.error = function(...args) {
+                errors.push(args.join(' '));
+                originalConsoleError.apply(console, args);
+            };
+
+            // 拦截console.warn
+            console.warn = function(...args) {
+                warnings.push(args.join(' '));
+                originalConsoleWarn.apply(console, args);
+            };
+
+            // 尝试执行关键功能
+            try {
+                // 测试App类
+                if (typeof App !== 'undefined') {
+                    console.log('✓ App类可用');
+                    results.push({ test: 'App类可用', status: 'pass', message: '✓ 可用' });
+                } else {
+                    results.push({ test: 'App类可用', status: 'fail', message: '✗ 不可用' });
+                }
+
+                // 测试StepViewer类
+                if (typeof StepViewer !== 'undefined') {
+                    console.log('✓ StepViewer类可用');
+                    results.push({ test: 'StepViewer类可用', status: 'pass', message: '✓ 可用' });
+                } else {
+                    results.push({ test: 'StepViewer类可用', status: 'fail', message: '✗ 不可用' });
+                }
+
+                // 测试PlatformSwitcher类
+                if (typeof PlatformSwitcher !== 'undefined') {
+                    console.log('✓ PlatformSwitcher类可用');
+                    results.push({ test: 'PlatformSwitcher类可用', status: 'pass', message: '✓ 可用' });
+                } else {
+                    results.push({ test: 'PlatformSwitcher类可用', status: 'fail', message: '✗ 不可用' });
+                }
+
+                // 测试CodeCopyButton类
+                if (typeof CodeCopyButton !== 'undefined') {
+                    console.log('✓ CodeCopyButton类可用');
+                    results.push({ test: 'CodeCopyButton类可用', status: 'pass', message: '✓ 可用' });
+                } else {
+                    results.push({ test: 'CodeCopyButton类可用', status: 'fail', message: '✗ 不可用' });
+                }
+
+            } catch (error) {
+                results.push({ test: '类加载测试', status: 'fail', message: `✗ 错误: ${error.message}` });
+            }
+
+            // 恢复原始console方法
+            console.error = originalConsoleError;
+            console.warn = originalConsoleWarn;
+
+            // 显示结果
+            displayResults('error-check-results', results);
+
+            // 显示错误和警告汇总
+            if (errors.length > 0 || warnings.length > 0) {
+                document.getElementById('error-check-results').innerHTML += `
+                    <div class="mt-4 p-4 bg-red-50 rounded border border-red-200">
+                        <p class="font-bold mb-2">发现的问题：</p>
+                        ${errors.length > 0 ? `<p class="text-red-700"><strong>错误 (${errors.length})：</strong></p><ul class="list-disc list-inside">${errors.map(e => `<li>${e}</li>`).join('')}</ul>` : ''}
+                        ${warnings.length > 0 ? `<p class="text-yellow-700"><strong>警告 (${warnings.length})：</strong></p><ul class="list-disc list-inside">${warnings.map(w => `<li>${w}</li>`).join('')}</ul>` : ''}
+                    </div>
+                `;
+            } else {
+                document.getElementById('error-check-results').innerHTML += `
+                    <div class="mt-4 p-4 bg-green-50 rounded border border-green-200">
+                        <p class="text-green-700 font-bold">✓ 未发现JavaScript错误或警告</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 4. 边缘情况检查
+        function testFirstVisit() {
+            console.log('🆕 测试：首次访问（localStorage清空）');
+
+            // 清空所有claude_code相关的localStorage
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('claude_code_')) {
+                    keysToRemove.push(key);
+                }
+            }
+
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            console.log('已清空localStorage，准备测试首次访问');
+
+            // 重新加载页面
+            setTimeout(() => {
+                alert('localStorage已清空，页面将重新加载以模拟首次访问');
+                window.location.reload();
+            }, 500);
+        }
+
+        function testMidProgressRefresh() {
+            console.log('🔄 测试：中途刷新恢复');
+
+            // 设置一些测试进度
+            localStorage.setItem('claude_code_module_test_progress', '2');
+            localStorage.setItem('claude_code_completed_modules', JSON.stringify(['1']));
+            localStorage.setItem('claude_code_selected_platform', 'windows');
+
+            console.log('已设置测试进度，准备刷新页面');
+            setTimeout(() => {
+                alert('已设置测试进度，页面将刷新以测试恢复功能');
+                window.location.reload();
+            }, 500);
+        }
+
+        function testCacheClear() {
+            console.log('🗑️ 测试：清空缓存后重新开始');
+
+            // 清空所有localStorage
+            localStorage.clear();
+            console.log('已清空所有localStorage');
+
+            setTimeout(() => {
+                alert('所有localStorage已清空，页面将重新加载');
+                window.location.reload();
+            }, 500);
+        }
+
+        // 5. 复制按钮功能测试
+        function checkCopyButton() {
+            console.log('📋 检查复制按钮功能...');
+
+            // 等待一下让代码复制按钮初始化
+            setTimeout(() => {
+                const results = [];
+
+                // 检查复制按钮是否存在
+                const copyButtons = document.querySelectorAll('.code-copy-btn');
+                const buttonExists = copyButtons.length > 0;
+                results.push({
+                    test: '复制按钮存在',
+                    status: buttonExists ? 'pass' : 'fail',
+                    message: buttonExists ? `✓ 找到 ${copyButtons.length} 个按钮` : '✗ 未找到按钮'
+                });
+
+                if (buttonExists) {
+                    const firstButton = copyButtons[0];
+                    const buttonStyle = window.getComputedStyle(firstButton);
+
+                    // 检查按钮是否始终可见
+                    const isVisible = buttonStyle.opacity !== '0' && buttonStyle.visibility !== 'hidden';
+                    results.push({
+                        test: '复制按钮始终可见',
+                        status: isVisible ? 'pass' : 'fail',
+                        message: isVisible ? '✓ 按钮可见' : '✗ 按钮不可见'
+                    });
+                    updateTestItem('copy-button-visibility', isVisible);
+
+                    // 检查按钮样式
+                    const backgroundColor = buttonStyle.background;
+                    const hasSemiTransparentWhite = backgroundColor.includes('255, 255, 255') ||
+                                                  backgroundColor.includes('rgba(255, 255, 255');
+                    results.push({
+                        test: '复制按钮样式（半透明白色）',
+                        status: hasSemiTransparentWhite ? 'pass' : 'fail',
+                        message: hasSemiTransparentWhite ? '✓ 样式正确' : `✗ 样式异常: ${backgroundColor}`
+                    });
+                    updateTestItem('copy-button-style', hasSemiTransparentWhite);
+
+                    // 检查按钮位置
+                    const position = buttonStyle.position;
+                    const isPositioned = position === 'absolute';
+                    results.push({
+                        test: '复制按钮定位正确',
+                        status: isPositioned ? 'pass' : 'fail',
+                        message: isPositioned ? '✓ 定位正确' : `✗ 定位异常: ${position}`
+                    });
+                }
+
+                // 测试复制功能
+                if (navigator.clipboard) {
+                    results.push({
+                        test: 'Clipboard API可用',
+                        status: 'pass',
+                        message: '✓ Clipboard API支持'
+                    });
+                } else {
+                    results.push({
+                        test: 'Clipboard API可用',
+                        status: 'fail',
+                        message: '✗ Clipboard API不支持，将使用降级方案'
+                    });
+                }
+
+                displayResults('copy-functionality', [results[results.length - 1]]);
+
+            }, 1000);
+        }
+
+        // 监听复制按钮点击来测试复制功能
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('code-copy-btn') || e.target.closest('.code-copy-btn')) {
+                console.log('复制按钮被点击');
+                setTimeout(() => {
+                    const button = e.target.classList.contains('code-copy-btn') ? e.target : e.target.closest('.code-copy-btn');
+                    if (button.textContent.includes('已复制')) {
+                        updateTestItem('copy-functionality', true);
+                        console.log('✓ 复制功能正常');
+                    }
+                }, 100);
+            }
+        });
+
+        // 辅助函数
+        function displayResults(containerId, results) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const html = results.map(result => `
+                <div class="test-item ${result.status}">
+                    <span class="status ${result.status}">${result.status === 'pass' ? '✓' : result.status === 'fail' ? '✗' : '⏳'}</span>
+                    <span>${result.test}: ${result.message}</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function updateTestItem(itemId, isPass) {
+            const item = document.getElementById(itemId);
+            if (item) {
+                item.className = `test-item ${isPass ? 'pass' : 'fail'}`;
+                const statusSpan = item.querySelector('.status');
+                if (statusSpan) {
+                    statusSpan.className = `status ${isPass ? 'pass' : 'fail'}`;
+                    statusSpan.textContent = isPass ? '✓' : '✗';
+                }
+            }
+        }
+
+        // 汇总所有测试结果
+        function updateSummary() {
+            // 这个函数会在测试完成后被调用来汇总结果
+            // 目前为占位符
+        }
+    </script>
+</body>
+</html>

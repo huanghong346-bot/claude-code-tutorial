@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码复制按钮测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .code-container {
+            position: relative;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow: auto;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .code-container:hover .copy-button {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .copy-button:hover {
+            background: #fff;
+        }
+
+        .copy-button:active {
+            transform: translateY(1px);
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>代码复制按钮功能测试</h1>
+    <p>将鼠标悬停在下面的代码块上，右上角会出现复制按钮。</p>
+
+    <div class="code-container">
+        <button class="copy-button">复制</button>
+        <pre><code>// 这是一个示例代码块
+const greeting = "Hello, World!";
+console.log(greeting);
+
+function testFunction() {
+    return "This is a test";
+}</code></pre>
+    </div>
+
+    <div class="code-container">
+        <button class="copy-button">复制</button>
+        <pre><code># 这是一个Python示例
+def calculate_sum(a, b):
+    return a + b
+
+result = calculate_sum(10, 20)
+print(f"Result: {result}")</code></pre>
+    </div>
+
+    <div class="code-container">
+        <button class="copy-button">复制</button>
+        <pre><code>/* 这是一个CSS示例 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.button {
+    background: #007bff;
+    color: white;
+}</code></pre>
+    </div>
+
+    <script>
+        // 获取所有复制按钮
+        const copyButtons = document.querySelectorAll('.copy-button');
+
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // 找到对应的代码容器
+                const container = this.closest('.code-container');
+                // 获取代码内容
+                const codeElement = container.querySelector('code');
+                const code = codeElement.textContent;
+
+                // 复制到剪贴板
+                navigator.clipboard.writeText(code).then(() => {
+                    // 保存原始文本
+                    const originalText = this.textContent;
+                    // 显示"✓ 已复制"
+                    this.textContent = '✓ 已复制';
+                    this.style.background = '#4caf50';
+                    this.style.color = 'white';
+
+                    // 2秒后恢复原始状态
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.background = '';
+                        this.style.color = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败，请手动复制');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
