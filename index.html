@@ -29,6 +29,8 @@
     }
   </script>
   <style>
+    html { overflow-y: auto; }
+
     /* 问卷系统样式 */
     .quiz-container {
       transition: opacity 0.3s ease;
@@ -230,7 +232,7 @@
     }
   </style>
 </head>
-<body class="bg-orange-50 min-h-screen font-sans text-gray-800" style="font-size:17px;">
+<body class="bg-orange-50 font-sans text-gray-800" style="font-size:17px;">
 
   <!-- 顶部AI陪跑横幅 -->
   <div id="ai-assistant-banner" class="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
@@ -244,9 +246,10 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- AI工具列表 (默认隐藏) -->
-    <div id="ai-tools-list" class="hidden fixed top-12 left-0 right-0 z-30 bg-white shadow-xl rounded-lg border border-gray-200">
+  <!-- AI工具列表 (默认隐藏) -->
+  <div id="ai-tools-list" class="hidden fixed top-12 left-0 right-0 z-30 bg-white shadow-xl rounded-lg border border-gray-200">
       <div class="max-w-6xl mx-auto p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- 国内可直接访问 -->
@@ -360,10 +363,10 @@
     </div>
 
     <!-- 问卷区域 -->
-    <div class="bg-white rounded-2xl shadow-md border border-orange-100 overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-md border border-orange-100">
 
       <!-- 卡片头部 -->
-      <div class="bg-gradient-to-r from-orange-500 to-amber-400 px-6 py-5">
+      <div class="bg-gradient-to-r from-orange-500 to-amber-400 px-6 py-5 rounded-t-2xl">
         <h2 class="text-white font-bold text-xl">📋 先做个小测评，帮你找到最合适的学习路线</h2>
         <p class="text-orange-100 text-sm mt-1">只需30秒，5个问题</p>
       </div>
