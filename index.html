@@ -460,16 +460,21 @@
     }
 
     // 页面加载后初始化问卷
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('📋 首页加载完成，初始化问卷系统...');
-      setTimeout(() => {
+    (function() {
+      function initQuiz() {
         if (typeof Quiz !== 'undefined') {
-          const quiz = new Quiz();
+          window.quiz = new Quiz();
         } else {
           console.error('Quiz类未定义，无法初始化问卷');
         }
-      }, 100);
-    });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initQuiz);
+      } else {
+        initQuiz();
+      }
+    })();
   </script>
 </body>
 </html>
