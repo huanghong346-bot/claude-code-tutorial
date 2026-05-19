@@ -560,6 +560,7 @@ class Quiz {
         `;
 
         container.innerHTML = html;
+        return html;
     }
 
     // 重置问卷
