@@ -63,13 +63,30 @@ class Quiz {
         this.answers = {};
         this.isCompleted = false;
 
-        this.init();
+        try {
+            this.init();
+        } catch (error) {
+            console.error('问卷初始化失败，使用默认状态:', error);
+            this.answers = {};
+            this.currentQuestion = 0;
+            this.isCompleted = false;
+            safeRemoveItem('claude_code_quiz_answers');
+            this.render();
+        }
     }
 
     // 初始化
     init() {
         this.loadAnswers();
         this.calculateStartingQuestion();
+        // 安全检查：防止currentQuestion越界导致渲染出"undefined"
+        if (!this.isCompleted && (this.currentQuestion < 0 || this.currentQuestion >= this.questions.length)) {
+            console.warn('问卷状态异常，自动重置');
+            this.answers = {};
+            this.currentQuestion = 0;
+            this.isCompleted = false;
+            safeRemoveItem('claude_code_quiz_answers');
+        }
         this.render();
         this.initEventListeners();
         this.renderProgressBar();
@@ -142,6 +159,17 @@ class Quiz {
         }
 
         const currentQuestion = this.questions[this.currentQuestion];
+        // 防御：如果题目数据异常，自动重置问卷
+        if (!currentQuestion || !currentQuestion.question) {
+            console.warn('题目数据异常，自动重置');
+            this.answers = {};
+            this.currentQuestion = 0;
+            this.isCompleted = false;
+            safeRemoveItem('claude_code_quiz_answers');
+            this.render();
+            return;
+        }
+
         const html = `
             <div class="quiz-container max-w-3xl mx-auto px-6 py-10">
                 <!-- 进度指示器 -->
